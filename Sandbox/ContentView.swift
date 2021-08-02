@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+func test() {
+    let first: CGFloat = 42
+    let second: Double = 19
+    let result = first + second
+    print(result)
+}
+
 struct ContentView: View {
     var body: some View {
         Text("Hello, world!")
