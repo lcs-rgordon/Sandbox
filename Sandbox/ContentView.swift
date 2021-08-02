@@ -111,6 +111,7 @@ struct ContentView: View {
                 
                 // Now the tasks will run entirely concurrently and then update the @State variables, no more await
                 // "Fire and forget" tasks, will complete when they get around to it, and then update their state variable
+                // NOTE: If you wanted to handle errors, you could go back to the async-await approach, or, you could use a do-catch within the Task to keep the fully concurrent approach
                 Task {
                     let inboxURL = URL(string: "https://hws.dev/inbox.json")!
                     inbox = try await URLSession.shared.decode(from: inboxURL)
