@@ -99,12 +99,43 @@ struct ContentView: View {
         }
     }
     
-    // This function must be marked "async" as well in order to call the decode function
-    func fetchInbox() async throws -> [Message] {
+//    // This function must be marked "async" as well in order to call the decode function
+//    func fetchInbox() async throws -> [Message] {
+//        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+//        // Use the extension defined earlier
+//        return try await URLSession.shared.decode(from: inboxURL)
+//    }
+    
+    func fetchInbox(completion: @escaping (Result<[Message], Error>) -> Void) {
         let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-        // Use the extension defined earlier
-        return try await URLSession.shared.decode(from: inboxURL)
+        
+        URLSession.shared.dataTask(with: inboxURL) { data, response, error in
+            if let data = data {
+                if let messages = try? JSONDecoder().decode([Message].self, from: data) {
+                    completion(.success(messages))
+                }
+            } else if let error = error {
+                completion(.failure(error))
+            }
+            
+        }.resume()
     }
+
+    // Wrapping old-style completion handler function in a modern function we can use with async-await
+    // Helpful for using existing functions written with completion handlers without having to totally re-write things
+    func fetchInbox() async throws -> [Message] {
+        try await withCheckedThrowingContinuation { continuation in
+            fetchInbox { result in
+                switch result {
+                case .success(let messages):
+                    continuation.resume(returning: messages)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
