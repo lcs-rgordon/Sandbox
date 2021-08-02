@@ -7,29 +7,37 @@
 
 import SwiftUI
 
-struct User: Identifiable {
-    let id = UUID()
-    let name: String
-    var isContacted = false
+@propertyWrapper struct Clamped<T: Comparable> {
+    let wrappedValue: T
+    
+    init(wrappedValue: T, range: ClosedRange<T>) {
+        self.wrappedValue = min(max(wrappedValue, range.lowerBound), range.upperBound)
+    }
 }
 
+func setScore1(to score: Int) {
+    print("setting score to \(score)")
+}
+
+func setScore2(@Clamped(range: 0...100) to score: Int) {
+    print("setting score to \(score)")
+}
+
+func test() {
+    setScore1(to: 50)
+    setScore1(to: -50)
+    setScore1(to: 500)
+    setScore2(to: 50)
+    setScore2(to: -50)
+    setScore2(to: 500)
+
+}
+
+
 struct ContentView: View {
-    @State private var users = [
-        User(name: "Taylor"),
-        User(name: "Austin"),
-        User(name: "Adele"),
-    ]
     
     var body: some View {
-        List($users) { $user in
-            HStack {
-                Text(user.name)
-                Spacer()
-                Toggle("Users has been contacted",
-                       isOn: $user.isContacted)
-                    .labelsHidden()
-            }
-        }
+        Text("Hello world!")
     }
 }
 
