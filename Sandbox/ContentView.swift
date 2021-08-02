@@ -109,9 +109,18 @@ struct ContentView: View {
             // It doesn't actually become a thread here – tasks are an abstraction on top of threads. You can have multiple tasks running on one thread – the system decides what is best.
             .task {
                 do {
-                    // Currently these tasks run serially – the second waits for the first to complete at the moment
-                    inbox = try await fetchInbox()
-                    sent = try await fetchSent()
+                    // Now the tasks run concurrently (side by side)
+                    // Swift remembers which async let values throw errors, so we don't need to use "try" here
+                    // Started in parallel...
+                    async let inboxItems = fetchInbox()
+                    async let sentItems = fetchSent()
+
+                    // At some, read the items that have come back
+                    // We must use await here to get the values back
+                    // We wait for the results sequentially
+                    inbox = try await inboxItems // It will wait here for inbox to finish..
+                    sent = try await sentItems // Before getting sent (but at least the tasks are started concurrently)
+                    
                 } catch {
                     print(error.localizedDescription)
                 }
