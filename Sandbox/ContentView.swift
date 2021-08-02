@@ -21,15 +21,13 @@ struct ContentView: View {
     ]
     
     var body: some View {
-        List {
-            ForEach(0..<users.count, id: \.self) { i in
-                HStack {
-                    Text(users[i].name)
-                    Spacer()
-                    Toggle("Users has been contacted",
-                           isOn: $users[i].isContacted)
-                        .labelsHidden()
-                }
+        List($users) { $user in
+            HStack {
+                Text(user.name)
+                Spacer()
+                Toggle("Users has been contacted",
+                       isOn: $user.isContacted)
+                    .labelsHidden()
             }
         }
     }
