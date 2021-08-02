@@ -8,9 +8,10 @@
 import SwiftUI
 
 func test() {
+    // Swift compiler will silently do this CGFloat(first)
     let first: CGFloat = 42
     let second: Double = 19
-    let result = first + second
+    let result = Double(first) + second
     print(result)
 }
 
