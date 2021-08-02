@@ -90,27 +90,10 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            Group {
-                if messages.isEmpty {
-                    Button("Load Messages") {
-                        // Starting asyncrhonous tasks from a synchronous closure
-                        Task {
-                            let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-                            inbox = try await URLSession.shared.decode(from: inboxURL)
-                        }
-                        Task {
-                            let sentURL = URL(string: "https://hws.dev/sent.json")!
-                            sent = try await URLSession.shared.decode(from: sentURL)
-                        }
-
-                    }
-                } else {
-                    // Show a list of messages
-                    List(messages) { message in
-                        Text("\(message.user):").bold() +
-                        Text(message.text)
-                    }
-                }
+            // Show a list of messages
+            List(messages) { message in
+                Text("\(message.user):").bold() +
+                Text(message.text)
             }
             .navigationTitle("Inbox")
             .toolbar {
@@ -124,6 +107,21 @@ struct ContentView: View {
             // The task will be cancelled when this view disappears.
             // async-await prepares our code to be able to split up – only when we use .task does it get split up.
             // It doesn't actually become a thread here – tasks are an abstraction on top of threads. You can have multiple tasks running on one thread – the system decides what is best.
+            .task {
+                
+                // Now the tasks will run entirely concurrently and then update the @State variables, no more await
+                // "Fire and forget" tasks, will complete when they get around to it, and then update their state variable
+                // NOTE: If you wanted to handle errors, you could go back to the async-await approach, or, you could do a 
+                Task {
+                    let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+                    inbox = try await URLSession.shared.decode(from: inboxURL)
+                }
+                Task {
+                    let sentURL = URL(string: "https://hws.dev/sent.json")!
+                    sent = try await URLSession.shared.decode(from: sentURL)
+                }
+                
+            }
         }
     }
     
