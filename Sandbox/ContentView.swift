@@ -7,14 +7,22 @@
 
 import SwiftUI
 
+func test() {
+    let names = ["Keely", "Roy", "Ted"]
+    // Member of names, postfix (afterward)
+    // Can now use release vs. debug # modifiers
+    let selected = names
+    #if DEBUG
+        .first
+    #else
+        .randomElement()
+    #endif
+    print(selected ?? "Anonymous")
+}
+
 struct ContentView: View {
     var body: some View {
-        // Original method for setting toggle style
-        Toggle("Example", isOn: .constant(true))
-            .toggleStyle(SwitchToggleStyle())
-        // New method for setting toggle style – much better
-        Toggle("Example", isOn: .constant(true))
-            .toggleStyle(.switch)
+        Text("Hello world")
     }
 }
 
