@@ -74,7 +74,7 @@ struct ContentView: View {
     
     // You can write to @State from anywhere in your program, even a background thread, and it will safely allow pushes to the main thread... synchronization is being done for us.
     @State private var inbox = [Message]()
-    
+    @State private var sent = [Message]()
     
     var body: some View {
         NavigationView {
@@ -96,52 +96,29 @@ struct ContentView: View {
                     print(error.localizedDescription)
                 }
             }
+            .task {
+                do {
+                    sent = try await fetchSent()
+                } catch {
+                    print(error.localizedDescription)
+                }
+            }
         }
     }
     
-//    // This function must be marked "async" as well in order to call the decode function
-//    func fetchInbox() async throws -> [Message] {
-//        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-//        // Use the extension defined earlier
-//        return try await URLSession.shared.decode(from: inboxURL)
-//    }
-    
-    func fetchInbox(completion: @escaping (Result<[Message], Error>) -> Void) {
-        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-        
-        URLSession.shared.dataTask(with: inboxURL) { data, response, error in
-            if let data = data {
-                // PROBLEM: What happens if the API has changed and this decode fails?
-                if let messages = try? JSONDecoder().decode([Message].self, from: data) {
-                    completion(.success(messages))
-                    return
-                }
-            } else if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            // SOLUTION: Handle situation where JSON could not be decoded?
-            completion(.success([]))
-            
-        }.resume()
-    }
-
-    // Wrapping old-style completion handler function in a modern function we can use with async-await
-    // Helpful for using existing functions written with completion handlers without having to totally re-write things
-    // Main rule is that we can only invoke the continuation once, not zero times, not more than once
+    // This function must be marked "async" as well in order to call the decode function
     func fetchInbox() async throws -> [Message] {
-        try await withCheckedThrowingContinuation { continuation in
-            fetchInbox { result in
-                switch result {
-                case .success(let messages):
-                    continuation.resume(returning: messages)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+        // Use the extension defined earlier
+        return try await URLSession.shared.decode(from: inboxURL)
     }
+    
+    func fetchSent() async throws -> [Message] {
+        let sentURL = URL(string: "https://hws.dev/sent.json")!
+        // Use the extension
+        return try await URLSession.shared.decode(from: sentURL)
+    }
+    
     
 }
 
