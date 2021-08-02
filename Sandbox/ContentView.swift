@@ -111,18 +111,25 @@ struct ContentView: View {
         
         URLSession.shared.dataTask(with: inboxURL) { data, response, error in
             if let data = data {
+                // PROBLEM: What happens if the API has changed and this decode fails?
                 if let messages = try? JSONDecoder().decode([Message].self, from: data) {
                     completion(.success(messages))
+                    return
                 }
             } else if let error = error {
                 completion(.failure(error))
+                return
             }
+            
+            // SOLUTION: Handle situation where JSON could not be decoded?
+            completion(.success([]))
             
         }.resume()
     }
 
     // Wrapping old-style completion handler function in a modern function we can use with async-await
     // Helpful for using existing functions written with completion handlers without having to totally re-write things
+    // Main rule is that we can only invoke the continuation once, not zero times, not more than once
     func fetchInbox() async throws -> [Message] {
         try await withCheckedThrowingContinuation { continuation in
             fetchInbox { result in
