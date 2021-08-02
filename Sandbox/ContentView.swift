@@ -7,18 +7,14 @@
 
 import SwiftUI
 
-func test() {
-    // Swift compiler will silently do this CGFloat(first)
-    let first: CGFloat = 42
-    let second: Double = 19
-    let result = Double(first) + second
-    print(result)
-}
-
 struct ContentView: View {
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        // Original method for setting toggle style
+        Toggle("Example", isOn: .constant(true))
+            .toggleStyle(SwitchToggleStyle())
+        // New method for setting toggle style – much better
+        Toggle("Example", isOn: .constant(true))
+            .toggleStyle(.switch)
     }
 }
 
