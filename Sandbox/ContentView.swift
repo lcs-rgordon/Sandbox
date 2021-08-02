@@ -114,9 +114,9 @@ struct ContentView: View {
                     // Started in parallel...
                     // Must use a constant (let) otherwise (if it was a variable) there is potential for the data used by an asyncrhonous task to be changed while the asynchronous task, which could create havoc with data races, et cetera
                     let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-                    async let inboxItems = URLSession.shared.decode([Message].self, from: inboxURL)
+                    async let inboxItems: [Message] = URLSession.shared.decode(from: inboxURL)
                     let sentURL = URL(string: "https://hws.dev/inbox.json")!
-                    async let sentItems = URLSession.shared.decode([Message].self, from: sentURL)
+                    async let sentItems: [Message] = URLSession.shared.decode(from: sentURL)
 
                     // At some, read the items that have come back
                     // We must use await here to get the values back
