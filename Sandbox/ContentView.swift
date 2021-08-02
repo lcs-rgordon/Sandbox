@@ -22,6 +22,8 @@ func fibonacci(of number: Int) -> Int {
 func printFibonacci(of number: Int, allowAbsolute: Bool = false) {
     
     // Will only run the next line when it's needed; an efficiency tweak
+    // via Ariana Antonio:
+    // "The change here is that before it could only be used as a property on a class or struct. Now it can also be used as a local property, as Paul demonstrated, inside a function."
     lazy var result = fibonacci(of: abs(number))
     if number < 0 {
         if allowAbsolute {
