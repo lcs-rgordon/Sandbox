@@ -109,6 +109,7 @@ struct ContentView: View {
             // It doesn't actually become a thread here – tasks are an abstraction on top of threads. You can have multiple tasks running on one thread – the system decides what is best.
             .task {
                 do {
+                    // Currently these tasks run serially – the second waits for the first to complete at the moment
                     inbox = try await fetchInbox()
                     sent = try await fetchSent()
                 } catch {
