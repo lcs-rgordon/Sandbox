@@ -112,8 +112,11 @@ struct ContentView: View {
                     // Now the tasks run concurrently (side by side)
                     // Swift remembers which async let values throw errors, so we don't need to use "try" here
                     // Started in parallel...
-                    async let inboxItems = fetchInbox()
-                    async let sentItems = fetchSent()
+                    // Must use a constant (let) otherwise (if it was a variable) there is potential for the data used by an asyncrhonous task to be changed while the asynchronous task, which could create havoc with data races, et cetera
+                    let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+                    async let inboxItems = URLSession.shared.decode([Message].self, from: inboxURL)
+                    let sentURL = URL(string: "https://hws.dev/inbox.json")!
+                    async let sentItems = URLSession.shared.decode([Message].self, from: sentURL)
 
                     // At some, read the items that have come back
                     // We must use await here to get the values back
@@ -127,20 +130,6 @@ struct ContentView: View {
             }
         }
     }
-    
-    // This function must be marked "async" as well in order to call the decode function
-    func fetchInbox() async throws -> [Message] {
-        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-        // Use the extension defined earlier
-        return try await URLSession.shared.decode(from: inboxURL)
-    }
-    
-    func fetchSent() async throws -> [Message] {
-        let sentURL = URL(string: "https://hws.dev/sent.json")!
-        // Use the extension
-        return try await URLSession.shared.decode(from: sentURL)
-    }
-    
     
 }
 
