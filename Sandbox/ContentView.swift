@@ -76,14 +76,31 @@ struct ContentView: View {
     @State private var inbox = [Message]()
     @State private var sent = [Message]()
     
+    let messageBoxes = ["Inbox", "Sent"]
+    
+    @State private var selectedBox = "Inbox"
+    
+    var messages: [Message] {
+        if selectedBox == "Inbox" {
+            return inbox
+        } else {
+            return sent
+        }
+    }
+    
     var body: some View {
         NavigationView {
             // Show a list of messages
-            List(inbox) { message in
+            List(messages) { message in
                 Text("\(message.user):").bold() +
                 Text(message.text)
             }
             .navigationTitle("Inbox")
+            .toolbar {
+                Picker("Select a message box", selection: $selectedBox) {
+                    ForEach(messageBoxes, id:\.self, content: Text.init)
+                }
+            }
             // Modifier that lets us use asynchronous task from a synchronous program
             // Adds a task to perform when this view appears.
             // The task will be cancelled when this view disappears.
