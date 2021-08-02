@@ -7,37 +7,35 @@
 
 import SwiftUI
 
-@propertyWrapper struct Clamped<T: Comparable> {
-    let wrappedValue: T
-    
-    init(wrappedValue: T, range: ClosedRange<T>) {
-        self.wrappedValue = min(max(wrappedValue, range.lowerBound), range.upperBound)
-    }
-}
-
-func setScore1(to score: Int) {
-    print("setting score to \(score)")
-}
-
-func setScore2(@Clamped(range: 0...100) to score: Int) {
-    print("setting score to \(score)")
+enum Vehicle: Codable {
+    case bicycle(electric: Bool)
+    case motorbike
+    case car(seats: Int)
+    case truck(wheels: Int)
 }
 
 func test() {
-    setScore1(to: 50)
-    setScore1(to: -50)
-    setScore1(to: 500)
-    setScore2(to: 50)
-    setScore2(to: -50)
-    setScore2(to: 500)
-
+    let traffic: [Vehicle] = [
+        .car(seats: 3),
+        .bicycle(electric: false),
+        .bicycle(electric: true),
+        .motorbike
+    ]
+    
+    do {
+        let jsonData = try JSONEncoder().encode(traffic)
+        let jsonString = String(decoding: jsonData, as: UTF8.self)
+        print(jsonString)
+    } catch {
+        print("Something went wrong")
+    }
 }
-
 
 struct ContentView: View {
     
     var body: some View {
         Text("Hello world!")
+            .onAppear(perform: test)
     }
 }
 
