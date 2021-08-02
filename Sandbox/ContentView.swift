@@ -7,14 +7,31 @@
 
 import SwiftUI
 
+struct User: Identifiable {
+    let id = UUID()
+    let name: String
+    var isContacted = false
+}
+
 struct ContentView: View {
+    @State private var users = [
+        User(name: "Taylor"),
+        User(name: "Austin"),
+        User(name: "Adele"),
+    ]
+    
     var body: some View {
-        Text("Welcome")
-        #if os(macOS)
-            .font(.largeTitle)
-        #else
-            .font(.title)
-        #endif
+        List {
+            ForEach(0..<users.count, id: \.self) { i in
+                HStack {
+                    Text(users[i].name)
+                    Spacer()
+                    Toggle("Users has been contacted",
+                           isOn: $users[i].isContacted)
+                        .labelsHidden()
+                }
+            }
+        }
     }
 }
 
