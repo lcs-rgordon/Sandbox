@@ -108,26 +108,18 @@ struct ContentView: View {
             // async-await prepares our code to be able to split up – only when we use .task does it get split up.
             // It doesn't actually become a thread here – tasks are an abstraction on top of threads. You can have multiple tasks running on one thread – the system decides what is best.
             .task {
-                do {
-                    // Makes async-let tasks explicit
-                    let inboxTask = Task { () -> [Message] in
-                        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-                        return try await URLSession.shared.decode(from: inboxURL)
-                    }
-                    let sentTask = Task { () -> [Message] in
-                        let sentURL = URL(string: "https://hws.dev/sent.json")!
-                        return try await URLSession.shared.decode(from: sentURL)
-                    }
-
-                    // At some, read the items that have come back
-                    // We must use await here to get the values back
-                    // We wait for the results sequentially
-                    inbox = try await inboxTask.value // It will wait here for inbox to finish..
-                    sent = try await sentTask.value // Before getting sent (but at least the tasks are started concurrently)
-                    
-                } catch {
-                    print(error.localizedDescription)
+                
+                // Now the tasks will run entirely concurrently and then update the @State variables, no more await
+                // "Fire and forget" tasks, will complete when they get around to it, and then update their state variable
+                Task {
+                    let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+                    inbox = try await URLSession.shared.decode(from: inboxURL)
                 }
+                Task {
+                    let sentURL = URL(string: "https://hws.dev/sent.json")!
+                    sent = try await URLSession.shared.decode(from: sentURL)
+                }
+                
             }
         }
     }
