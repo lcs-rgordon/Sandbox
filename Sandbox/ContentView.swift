@@ -108,19 +108,27 @@ struct ContentView: View {
             // async-await prepares our code to be able to split up – only when we use .task does it get split up.
             // It doesn't actually become a thread here – tasks are an abstraction on top of threads. You can have multiple tasks running on one thread – the system decides what is best.
             .task {
-                
-                // Now the tasks will run entirely concurrently and then update the @State variables, no more await
-                // "Fire and forget" tasks, will complete when they get around to it, and then update their state variable
-                // NOTE: If you wanted to handle errors, you could go back to the async-await approach, or, you could do a 
-                Task {
-                    let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-                    inbox = try await URLSession.shared.decode(from: inboxURL)
+                do {
+                    let inboxTask = Task { () -> [Message] in
+                        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+                        return try await URLSession.shared.decode(from: inboxURL)
+                    }
+                    let sentTask = Task { () -> [Message] in
+                        let sentURL = URL(string: "https://hws.dev/sent.json")!
+                        return try await URLSession.shared.decode(from: sentURL)
+                    }
+
+                    // Results might have worked, or might have an error – up to us to handle them
+                    let inboxResult = await inboxTask.result // It will wait here for inbox to finish..
+                    let sentResult = await sentTask.result // Before getting sent (but at least the tasks are started concurrently)
+                    
+                    // We don't need await any more, as we've already waiting for the outcome of the asyncronous tasks
+                    inbox = try inboxResult.get()
+                    sent = try sentResult.get()
+                    
+                } catch {
+                    print(error.localizedDescription)
                 }
-                Task {
-                    let sentURL = URL(string: "https://hws.dev/sent.json")!
-                    sent = try await URLSession.shared.decode(from: sentURL)
-                }
-                
             }
         }
     }
