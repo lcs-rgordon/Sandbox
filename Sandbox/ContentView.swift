@@ -109,12 +109,6 @@ struct ContentView: View {
             .task {
                 do {
                     inbox = try await fetchInbox()
-                } catch {
-                    print(error.localizedDescription)
-                }
-            }
-            .task {
-                do {
                     sent = try await fetchSent()
                 } catch {
                     print(error.localizedDescription)
