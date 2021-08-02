@@ -7,35 +7,45 @@
 
 import SwiftUI
 
-enum Vehicle: Codable {
-    case bicycle(electric: Bool)
-    case motorbike
-    case car(seats: Int)
-    case truck(wheels: Int)
+
+func fibonacci(of number: Int) -> Int {
+    var first = 0
+    var second = 1
+    for _ in 0..<number {
+        let previous = first
+        first = second
+        second = previous + first
+    }
+    return first
+}
+
+func printFibonacci(of number: Int, allowAbsolute: Bool = false) {
+    
+    // Will only run the next line when it's needed; an efficiency tweak
+    lazy var result = fibonacci(of: abs(number))
+    if number < 0 {
+        if allowAbsolute {
+            print("The result for \(abs(number)) is \(result)")
+        } else {
+            print("That's not a valid number in the sequence.")
+        }
+    } else {
+        print("The result for \(number) is \(result)")
+    }
+    
 }
 
 func test() {
-    let traffic: [Vehicle] = [
-        .car(seats: 3),
-        .bicycle(electric: false),
-        .bicycle(electric: true),
-        .motorbike
-    ]
-    
-    do {
-        let jsonData = try JSONEncoder().encode(traffic)
-        let jsonString = String(decoding: jsonData, as: UTF8.self)
-        print(jsonString)
-    } catch {
-        print("Something went wrong")
-    }
+    print(fibonacci(of: 7))
 }
 
 struct ContentView: View {
     
     var body: some View {
         Text("Hello world!")
-            .onAppear(perform: test)
+            .onAppear {
+                test()
+            }
     }
 }
 
