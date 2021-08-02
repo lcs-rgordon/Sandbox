@@ -114,7 +114,7 @@ struct ContentView: View {
                         // Swift will override the low priority because... we are awaiting the results of a task – a task being waited on should not be set as a low value
                         // Try commenting out the
                         //      inbox = try await inboxTask.value
-                        // line... sincd the task is no longer being waited on, the priority being set to .low will no loner be overridden
+                        // line... since the task is no longer being waited on, the priority being set to .low will no longer be overridden
                         print(Task.currentPriority)
                         
                         let inboxURL = URL(string: "https://hws.dev/inbox.json")!
