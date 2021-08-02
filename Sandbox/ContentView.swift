@@ -109,20 +109,21 @@ struct ContentView: View {
             // It doesn't actually become a thread here – tasks are an abstraction on top of threads. You can have multiple tasks running on one thread – the system decides what is best.
             .task {
                 do {
-                    // Now the tasks run concurrently (side by side)
-                    // Swift remembers which async let values throw errors, so we don't need to use "try" here
-                    // Started in parallel...
-                    // Must use a constant (let) otherwise (if it was a variable) there is potential for the data used by an asyncrhonous task to be changed while the asynchronous task, which could create havoc with data races, et cetera
-                    let inboxURL = URL(string: "https://hws.dev/inbox.json")!
-                    async let inboxItems: [Message] = URLSession.shared.decode(from: inboxURL)
-                    let sentURL = URL(string: "https://hws.dev/inbox.json")!
-                    async let sentItems: [Message] = URLSession.shared.decode(from: sentURL)
+                    // Makes async-let tasks explicit
+                    let inboxTask = Task { () -> [Message] in
+                        let inboxURL = URL(string: "https://hws.dev/inbox.json")!
+                        return try await URLSession.shared.decode(from: inboxURL)
+                    }
+                    let sentTask = Task { () -> [Message] in
+                        let sentURL = URL(string: "https://hws.dev/sent.json")!
+                        return try await URLSession.shared.decode(from: sentURL)
+                    }
 
                     // At some, read the items that have come back
                     // We must use await here to get the values back
                     // We wait for the results sequentially
-                    inbox = try await inboxItems // It will wait here for inbox to finish..
-                    sent = try await sentItems // Before getting sent (but at least the tasks are started concurrently)
+                    inbox = try await inboxTask.value // It will wait here for inbox to finish..
+                    sent = try await sentTask.value // Before getting sent (but at least the tasks are started concurrently)
                     
                 } catch {
                     print(error.localizedDescription)
