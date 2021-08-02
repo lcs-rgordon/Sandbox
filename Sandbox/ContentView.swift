@@ -7,22 +7,14 @@
 
 import SwiftUI
 
-func test() {
-    let names = ["Keely", "Roy", "Ted"]
-    // Member of names, postfix (afterward)
-    // Can now use release vs. debug # modifiers
-    let selected = names
-    #if DEBUG
-        .first
-    #else
-        .randomElement()
-    #endif
-    print(selected ?? "Anonymous")
-}
-
 struct ContentView: View {
     var body: some View {
-        Text("Hello world")
+        Text("Welcome")
+        #if os(macOS)
+            .font(.largeTitle)
+        #else
+            .font(.title)
+        #endif
     }
 }
 
