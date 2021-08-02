@@ -100,6 +100,7 @@ struct ContentView: View {
                 Picker("Select a message box", selection: $selectedBox) {
                     ForEach(messageBoxes, id:\.self, content: Text.init)
                 }
+                .pickerStyle(.segmented)
             }
             // Modifier that lets us use asynchronous task from a synchronous program
             // Adds a task to perform when this view appears.
