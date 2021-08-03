@@ -80,6 +80,12 @@ extension Task where Success == Never, Failure == Never {
 func printMessage() async {
     let string = await withTaskGroup(of: String.self) { group -> String in
         group.addTask {
+            
+            do {
+                try await Task.sleep(seconds: 1)
+            } catch {
+                
+            }
             return "Hello"
         }
         group.addTask {
