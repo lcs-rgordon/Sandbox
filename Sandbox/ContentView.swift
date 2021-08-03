@@ -49,6 +49,9 @@ extension URLSession {
         // so, "try"
         let (data, _) = try await data(from: url)
         
+        // AFTER the data has been retrieved, but before it is decoded, this is a good time to check for cancellation
+        try Task.checkCancellation()
+        
         // Set up the decoder with the options the user passed in
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = keyDecodingStrategy
@@ -72,14 +75,6 @@ extension Task where Success == Never, Failure == Never {
     }
 }
 
-// An example of extending a Task for a specific type
-extension Task where Success == String {
-    func getCount() async throws -> Int {
-        try await self.value.count
-    }
-}
-
-
 // Find all the factors of a given positive integer
 func factors(for number: Int) async -> [Int] {
     
@@ -94,6 +89,13 @@ func factors(for number: Int) async -> [Int] {
             result.append(check)
             // This is a good place to give Swift some time to breathe, since it doesn't add another check (if statement)
             await Task.suspend()
+        }
+        
+        // If this task ends up being cancelled, what should we do?
+        // We could return what we have so far..., just: return result
+        // We could return an empty array, just: return []
+        if Task.isCancelled {
+            return []
         }
     }
     return result
@@ -168,6 +170,13 @@ struct ContentView: View {
                         let sentURL = URL(string: "https://hws.dev/sent.json")!
                         return try await URLSession.shared.decode(from: sentURL)
                     }
+                    
+                    // Example of how to cancel a task, but the task itself, above, currently doesn't have any checks for being cancelled
+                    // Turns out, you don't always need to.
+                    // Apple's APIs build some things in for us... there is implicit cancellation built into things like JSON decoding and URLSession
+                    // For an explicit check for cancellation, we must think about where the work is going to happen
+                    // NOTE: Cancelling the inboxTask would cause the retreival of inboxTask.value to fail, so you'd need to catch that error, then proceed to load the sent messages
+                    inboxTask.cancel()
                     
                     // At some, read the items that have come back
                     // We must use await here to get the values back
