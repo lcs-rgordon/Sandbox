@@ -181,8 +181,14 @@ struct ContentView: View {
                     // At some, read the items that have come back
                     // We must use await here to get the values back
                     // We wait for the results sequentially
-                    inbox = try await inboxTask.value // It will wait here for inbox to finish..
-                    sent = try await sentTask.value // Before getting sent (but at least the tasks are started concurrently)
+                    do {
+                        inbox = try await inboxTask.value // It will wait here for inbox to finish..
+                    } catch {
+                        print(error.localizedDescription)
+                        print("Inbox didn't load")
+                        
+                        sent = try await sentTask.value // Before getting sent (but at least the tasks are started concurrently)
+                    }
                     
                 } catch {
                     print(error.localizedDescription)
