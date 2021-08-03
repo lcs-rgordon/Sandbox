@@ -219,7 +219,22 @@ struct ContentView: View {
                     // We must use await here to get the values back
                     // We wait for the results sequentially
                     do {
-                        inbox = try await inboxTask.value // It will wait here for inbox to finish..
+                        inbox = try await withThrowingTaskGroup(of: [Message].self) { group -> [Message] in
+                            for i in 1...3 {
+                                group.addTask {
+                                    let url = URL(string: "https://hws.dev/inbox-\(i).json")!
+                                    let (data, _) = try await URLSession.shared.data(from: url)
+                                    return try JSONDecoder().decode([Message].self, from: data)
+                                }
+                                
+                            }
+                            let allMessages = try await group.reduce(into: [Message]()) { $0 += $1 }
+                            return allMessages.sorted(by: { lhs, rhs in
+                                lhs.id < rhs.id
+                            })
+
+                        }
+                        
                     } catch {
                         print(error.localizedDescription)
                         print("Inbox didn't load")
