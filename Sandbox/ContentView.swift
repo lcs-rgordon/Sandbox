@@ -79,13 +79,7 @@ extension Task where Success == Never, Failure == Never {
 // Order of completion is not guaranteed, so the string returned may differ when printMessage() is invoked.
 func printMessage() async {
     let string = await withTaskGroup(of: String.self) { group -> String in
-        group.addTask {
-            
-            do {
-                try await Task.sleep(seconds: 1)
-            } catch {
-                
-            }
+        group.addTask(priority: .low) {
             return "Hello"
         }
         group.addTask {
