@@ -79,6 +79,27 @@ extension Task where Success == String {
     }
 }
 
+
+// Find all the factors of a given positive integer
+func factors(for number: Int) async -> [Int] {
+    
+    // No factors for 0 or negative values
+    guard number > 0 else {
+        return []
+    }
+    
+    var result = [Int]()
+    for check in 1...number {
+        if number.isMultiple(of: check) {
+            result.append(check)
+            // This is a good place to give Swift some time to breathe, since it doesn't add another check (if statement)
+            await Task.suspend()
+        }
+    }
+    return result
+}
+
+
 struct Message: Codable, Identifiable {
     let id: Int
     let user: String
@@ -142,6 +163,7 @@ struct ContentView: View {
                         // You get a guaranteed minimum sleep but the sleep time might be longer
                         // Nanoseconds is the unit for now, but seconds coming later.
                         // Until then, see extension defined above
+                        // NOTE: If you call sleep on a task that has been cancelled, an error will be thrown.
                         try await Task.sleep(seconds: 1)
                         let sentURL = URL(string: "https://hws.dev/sent.json")!
                         return try await URLSession.shared.decode(from: sentURL)
