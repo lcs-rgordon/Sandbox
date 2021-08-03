@@ -63,6 +63,22 @@ extension URLSession {
     
 }
 
+// An extension to allow us to sleep in units of time measured in seconds
+// Success == Never, Failure == Never keeps the extension generic, so it works with all Result types
+extension Task where Success == Never, Failure == Never {
+    static func sleep(seconds: Double) async throws {
+        let duration = UInt64(seconds * 1_000_000_000)
+        try await sleep(nanoseconds: duration)
+    }
+}
+
+// An example of extending a Task for a specific type
+extension Task where Success == String {
+    func getCount() async throws -> Int {
+        try await self.value.count
+    }
+}
+
 struct Message: Codable, Identifiable {
     let id: Int
     let user: String
@@ -120,11 +136,17 @@ struct ContentView: View {
                         let inboxURL = URL(string: "https://hws.dev/inbox.json")!
                         return try await URLSession.shared.decode(from: inboxURL)
                     }
+                    
                     let sentTask = Task { () -> [Message] in
+                        // Task.sleep – nanoseconds (1 billion nanoseconds to get 1 second)
+                        // You get a guaranteed minimum sleep but the sleep time might be longer
+                        // Nanoseconds is the unit for now, but seconds coming later.
+                        // Until then, see extension defined above
+                        try await Task.sleep(seconds: 1)
                         let sentURL = URL(string: "https://hws.dev/sent.json")!
                         return try await URLSession.shared.decode(from: sentURL)
                     }
-
+                    
                     // At some, read the items that have come back
                     // We must use await here to get the values back
                     // We wait for the results sequentially
