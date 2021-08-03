@@ -75,6 +75,41 @@ extension Task where Success == Never, Failure == Never {
     }
 }
 
+// Example of using task groups
+// Order of completion is not guaranteed, so the string returned may differ when printMessage() is invoked.
+func printMessage() async {
+    let string = await withTaskGroup(of: String.self) { group -> String in
+        group.addTask {
+            return "Hello"
+        }
+        group.addTask {
+            return "from"
+        }
+        group.addTask {
+            return "a"
+        }
+        group.addTask {
+            return "task"
+        }
+        group.addTask {
+            return "group."
+        }
+        
+        var collected = [String]()
+        
+        for await value in group {
+            collected.append(value)
+        }
+        
+        return collected.joined(separator: " ")
+
+    }
+    
+    print(string)
+    
+}
+
+
 // Find all the factors of a given positive integer
 func factors(for number: Int) async -> [Int] {
     
@@ -177,6 +212,8 @@ struct ContentView: View {
                     // For an explicit check for cancellation, we must think about where the work is going to happen
                     // NOTE: Cancelling the inboxTask would cause the retreival of inboxTask.value to fail, so you'd need to catch that error, then proceed to load the sent messages
                     inboxTask.cancel()
+                    
+                    await printMessage()
                     
                     // At some, read the items that have come back
                     // We must use await here to get the values back
